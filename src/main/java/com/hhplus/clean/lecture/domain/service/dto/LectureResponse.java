@@ -3,7 +3,6 @@ package com.hhplus.clean.lecture.domain.service.dto;
 import com.hhplus.clean.lecture.domain.entity.Lecture;
 import com.hhplus.clean.lecture.domain.entity.LectureHistory;
 import lombok.Builder;
-import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
