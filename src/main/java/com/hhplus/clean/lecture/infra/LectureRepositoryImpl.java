@@ -16,7 +16,7 @@ public class LectureRepositoryImpl implements LectureRepository {
 
     @Override
     public Optional<Lecture> findById(Long lectureId) {
-        return Optional.empty();
+        return lectureJpaRepository.findById(lectureId);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class LectureRepositoryImpl implements LectureRepository {
 
     @Override
     public List<Lecture> findAll() {
-        return List.of();
+        return lectureJpaRepository.findAll();
     }
 
     @Override
