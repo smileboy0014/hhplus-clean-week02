@@ -1,6 +1,5 @@
 package com.hhplus.clean.lecture.domain.service.dto;
 
-import com.hhplus.clean.lecture.domain.entity.LectureHistory;
 import lombok.Builder;
 
 @Builder

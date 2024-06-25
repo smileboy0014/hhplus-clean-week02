@@ -1,7 +1,6 @@
 package com.hhplus.clean.lecture.controller.dto;
 
 import com.hhplus.clean.lecture.domain.service.dto.LectureApplyServiceRequest;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record LectureApplyRequest(@NotNull(message = "강의 ID는 필수값 입니다.") Long lectureId,
