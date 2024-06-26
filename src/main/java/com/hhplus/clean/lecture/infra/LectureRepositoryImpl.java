@@ -21,7 +21,7 @@ public class LectureRepositoryImpl implements LectureRepository {
 
     @Override
     public Lecture save(Lecture lecture) {
-        return null;
+        return lectureJpaRepository.save(lecture);
     }
 
     @Override
@@ -31,16 +31,13 @@ public class LectureRepositoryImpl implements LectureRepository {
 
     @Override
     public Optional<Lecture> findByName(String name) {
-        return Optional.empty();
+        return lectureJpaRepository.findByName(name);
     }
 
     @Override
     public void deleteById(Long lectureId) {
 
-    }
-
-    @Override
-    public void deleteAll() {
-
+        lectureJpaRepository.findById(lectureId)
+                .ifPresent(lectureJpaRepository::delete);
     }
 }

@@ -24,5 +24,4 @@ public record LectureResponse(Long lectureId, String name,
     }
 
 
-
 }

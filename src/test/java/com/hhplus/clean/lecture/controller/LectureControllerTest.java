@@ -2,7 +2,7 @@ package com.hhplus.clean.lecture.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hhplus.clean.lecture.controller.dto.LectureApplyRequest;
-import com.hhplus.clean.lecture.domain.entity.Lecture;
+import com.hhplus.clean.lecture.controller.dto.LectureCreateRequest;
 import com.hhplus.clean.lecture.domain.service.LectureService;
 import com.hhplus.clean.lecture.domain.service.dto.HistoryResponse;
 import com.hhplus.clean.lecture.domain.service.dto.LectureResponse;
@@ -14,11 +14,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import static java.time.LocalDateTime.now;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -54,7 +55,7 @@ class LectureControllerTest {
 
     @Test
     @DisplayName("유저가 수강 신청을 하면 수강 신청 내역이 남는다.")
-    void apply() throws Exception {
+    void applyLecture() throws Exception {
         //given
         Long historyId = 1L;
         Long lectureId = 1L;
@@ -72,6 +73,54 @@ class LectureControllerTest {
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.status").value("OK"))
                 .andExpect(jsonPath("$.message").value("OK"));
+    }
+
+    @Test
+    @DisplayName("수강 신청할 특강을 등록 한다.")
+    void createLecture() throws Exception {
+        // given
+        Long lectureId = 1L;
+        String name = "태_특강";
+        Integer totalQuantity = 100;
+        LocalDateTime dateAppliedStart = now();
+
+        LectureResponse response = LectureResponse.builder()
+                .lectureId(lectureId)
+                .name(name)
+                .totalQuantity(totalQuantity)
+                .dateAppliedStart(dateAppliedStart)
+                .build();
+
+        LectureCreateRequest request = LectureCreateRequest.builder()
+                .name(name)
+                .totalQuantity(totalQuantity)
+                .dateAppliedStart(dateAppliedStart)
+                .build();
+
+        when(lectureService.createLecture(request.toServiceRequest())).thenReturn(response);
+
+        // when  // then
+        mockMvc.perform(post("/lectures")
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andExpect(jsonPath("$.message").value("OK"))
+                .andExpect(jsonPath("$.data.lectureId").value(1L));
+    }
+
+    @DisplayName("등록된 특강을 삭제합니다.")
+    @Test
+    void deleteLecture() throws Exception {
+        // given
+        Long lectureId = 1L;
+
+
+        // when // then
+        mockMvc.perform(delete("/lectures/%s".formatted(lectureId)))
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 
     @Test

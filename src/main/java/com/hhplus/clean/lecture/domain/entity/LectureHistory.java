@@ -1,7 +1,6 @@
 package com.hhplus.clean.lecture.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -33,10 +32,10 @@ public class LectureHistory extends BaseTimeEntity {
 
     //== 연관 관계 편의 메서드 ==//
 
-//    public void belongTo(Lecture lecture) {
-//        if (this.lecture != null) {
-//            this.lecture.getLectureHistories().remove(this);
-//        }
-//        this.lecture = lecture;
-//    }
+    public void belongTo(Lecture lecture) {
+        if (this.lecture != null) {
+            this.lecture.getLectureHistories().remove(this);
+        }
+        this.lecture = lecture;
+    }
 }

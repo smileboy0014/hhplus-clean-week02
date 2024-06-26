@@ -5,8 +5,6 @@ import com.hhplus.clean.lecture.domain.repository.LectureHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
 @RequiredArgsConstructor
 public class LectureHistoryRepositoryImpl implements LectureHistoryRepository {
@@ -25,22 +23,8 @@ public class LectureHistoryRepositoryImpl implements LectureHistoryRepository {
     }
 
     @Override
-    public List<LectureHistory> findAll() {
-        return lectureHistoryJpaRepository.findAll();
-    }
-
-    @Override
-    public void deleteAll() {
-
-    }
-
-    @Override
     public void deleteByLectureIdAndUserId(Long lectureId, Long userId) {
-
+        lectureHistoryJpaRepository.deleteByLecture_LectureIdAndUserId(lectureId, userId);
     }
 
-    @Override
-    public void deleteByLectureId(Long lectureId) {
-
-    }
 }

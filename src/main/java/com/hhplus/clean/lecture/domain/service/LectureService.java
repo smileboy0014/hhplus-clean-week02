@@ -4,19 +4,15 @@ import com.hhplus.clean.lecture.domain.entity.Lecture;
 import com.hhplus.clean.lecture.domain.entity.LectureHistory;
 import com.hhplus.clean.lecture.domain.repository.LectureHistoryRepository;
 import com.hhplus.clean.lecture.domain.repository.LectureRepository;
-import com.hhplus.clean.lecture.domain.service.dto.HistoryResponse;
-import com.hhplus.clean.lecture.domain.service.dto.LectureApplyServiceRequest;
-import com.hhplus.clean.lecture.domain.service.dto.LectureResponse;
+import com.hhplus.clean.lecture.domain.service.dto.*;
 import com.hhplus.clean.lecture.exception.LectureException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.hhplus.clean.lecture.exception.ErrorCode.DUPLICATED_LECTURE_APPLY;
-import static com.hhplus.clean.lecture.exception.ErrorCode.LECTURE_NOT_EXIST;
+import static com.hhplus.clean.lecture.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +29,7 @@ public class LectureService {
         return lectureRepository.findAll()
                 .stream()
                 .map(LectureResponse::of)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // 특강 신청
@@ -52,25 +48,35 @@ public class LectureService {
         // 유저가 강의를 신청했는지 확인한다. (validation) + 강의 신청 내역에 저장한다.
         LectureHistory applyHistory = lectureHistoryRepository.findByLectureIdAndUserId(request.lectureId(), request.userId());
         if (applyHistory != null) {
-            throw new LectureException(DUPLICATED_LECTURE_APPLY, "이미 같은 특강에 등록한 유저가 존재합니다. 신청 특강 ID:%s, 신청 유저 ID:%s"
+            throw new LectureException(DUPLICATED_LECTURE_APPLY, "이미 같은 특강에 등록한 유저가 존재합니다. '신청 특강 ID:%s, 신청 유저 ID:%s'"
                     .formatted(request.lectureId(), request.userId()));
         }
 
-        lectureHistoryRepository.save(request.toEntity(lecture));
+        LectureHistory newHistory = lectureHistoryRepository.save(request.toEntity(lecture));
 
-        return HistoryResponse.of(request);
+        lecture.addLectureHistory(newHistory);
+
+        return HistoryResponse.of(newHistory);
     }
 
     // 특강 등록
     @Transactional
-    public Long registerLecture(String request) {
-        return 0L;
+    public LectureResponse createLecture(LectureCreateServiceRequest request) {
+
+        // 같은 이름의 강의가 존재하는지 확인
+        if (!availableLectureName(request)) {
+            throw new LectureException(DUPLICATED_LECTURE_NAME, "이미 같은 이름의 강의가 존재합니다. '%s'".formatted(request.name()));
+        }
+
+        Lecture newLecture = lectureRepository.save(request.toEntity());
+
+        return LectureResponse.of(newLecture);
     }
 
     // 특강 삭제
     @Transactional
     public void deleteLecture(Long lectureId) {
-
+        lectureRepository.deleteById(lectureId);
     }
 
     // 특강 신청 여부 확인
@@ -81,7 +87,14 @@ public class LectureService {
 
     // 특강 신청 취소
     @Transactional
-    public void cancelHistory(Long lectureId, Long userId) {
+    public void cancelHistory(LectureCancelServiceRequest request) {
+
+        lectureHistoryRepository.deleteByLectureIdAndUserId(request.lectureId(), request.userId());
+
+    }
+
+    private boolean availableLectureName(LectureCreateServiceRequest request) {
+        return lectureRepository.findByName(request.name()).isEmpty();
 
     }
 }

@@ -1,10 +1,8 @@
 package com.hhplus.clean.lecture.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hhplus.clean.lecture.exception.LectureException;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.context.annotation.Primary;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -12,7 +10,7 @@ import java.util.List;
 
 import static com.hhplus.clean.lecture.exception.ErrorCode.INVALID_LECTURE_APPLY_DATE;
 import static com.hhplus.clean.lecture.exception.ErrorCode.INVALID_LECTURE_APPLY_QUANTITY;
-import static java.time.LocalDateTime.*;
+import static java.time.LocalDateTime.now;
 
 @Entity
 @Builder
@@ -43,17 +41,17 @@ public class Lecture extends BaseTimeEntity {
 
 
     //== 연관 관계 편의 메서드 ==//
-//    public void setLectureHistory(LectureHistory lectureHistory) {
-//        if (this.lectureHistories == null) {
-//            this.lectureHistories = new ArrayList<>();
-//        }
-//
-//        this.lectureHistories.add(lectureHistory);
-//
-//        if (lectureHistory.getLecture() != this) {
-//            lectureHistory.belongTo(this);
-//        }
-//    }
+    public void addLectureHistory(LectureHistory lectureHistory) {
+        if (this.lectureHistories == null) {
+            this.lectureHistories = new ArrayList<>();
+        }
+
+        this.lectureHistories.add(lectureHistory);
+
+        if (lectureHistory.getLecture() != this) {
+            lectureHistory.belongTo(this);
+        }
+    }
 
     // 검증 로직
     public void apply() {

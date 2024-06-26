@@ -5,7 +5,7 @@ spring:
     name: hhplus-clean-java-week02
   datasource:
     hikari:
-      jdbc-url: jdbc:mysql://localhost:13306/lecture?useUnicode=yes&characterEncoding=UTF-8&rewriteBatchedStatements=true
+      jdbc-url: jdbc:mysql://localhost:23306/lecture?useUnicode=yes&characterEncoding=UTF-8&rewriteBatchedStatements=true
       driver-class-name: com.mysql.cj.jdbc.Driver
       username: abcd
       password: 1234

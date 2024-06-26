@@ -4,14 +4,11 @@ import com.hhplus.clean.lecture.domain.entity.Lecture;
 import com.hhplus.clean.lecture.domain.entity.LectureHistory;
 import com.hhplus.clean.lecture.domain.repository.LectureHistoryRepository;
 import com.hhplus.clean.lecture.domain.repository.LectureRepository;
-import com.hhplus.clean.lecture.domain.service.dto.HistoryResponse;
-import com.hhplus.clean.lecture.domain.service.dto.LectureApplyServiceRequest;
-import com.hhplus.clean.lecture.domain.service.dto.LectureResponse;
+import com.hhplus.clean.lecture.domain.service.dto.*;
 import com.hhplus.clean.lecture.exception.LectureException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestClassOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -24,6 +21,8 @@ import static com.hhplus.clean.lecture.exception.ErrorCode.*;
 import static java.time.LocalDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -58,6 +57,73 @@ class LectureServiceTest {
         assertThat(result).hasSize(2);
     }
 
+    @Test
+    @DisplayName("수강 신청할 특강을 등록한다.")
+    void createLecture() {
+        // given
+        Integer totalQuantity = 50;
+        String name = "특강";
+        LocalDateTime date = LocalDateTime.now().plusDays(10);
+
+        LectureCreateServiceRequest request = LectureCreateServiceRequest.builder()
+                .name(name)
+                .totalQuantity(totalQuantity)
+                .dateAppliedStart(date)
+                .build();
+
+        Lecture lecture = createLecture(1L, name, totalQuantity, 0, date);
+
+        when(lectureRepository.save(any(Lecture.class))).thenReturn(lecture);
+
+        // when
+        LectureResponse result = lectureService.createLecture(request);
+
+        // then
+        assertThat(result).extracting("name", "totalQuantity", "dateAppliedStart")
+                .contains(name, totalQuantity, date);
+
+    }
+
+    @Test
+    @DisplayName("같은 이름으로 특강을 신청하면 예외를 반환한다.")
+    void createLectureWithDuplicatedName() {
+        // given
+        Integer totalQuantity = 50;
+        String name = "특강";
+        LocalDateTime date = LocalDateTime.now().plusDays(10);
+
+        LectureCreateServiceRequest request = LectureCreateServiceRequest.builder()
+                .name(name)
+                .totalQuantity(totalQuantity)
+                .dateAppliedStart(date)
+                .build();
+
+        Lecture lecture = createLecture(1L, name, totalQuantity, 0, date);
+
+        when(lectureRepository.findByName(name)).thenReturn(Optional.ofNullable(lecture));
+        when(lectureRepository.save(any(Lecture.class))).thenReturn(lecture);
+
+        // when // then
+        assertThatThrownBy(() -> lectureService.createLecture(request))
+                .isInstanceOf(LectureException.class)
+                .extracting("errorCode")
+                .isEqualTo(DUPLICATED_LECTURE_NAME);
+
+    }
+
+    @DisplayName("이미 등록된 특강을 삭제한다.")
+    @Test
+    void deleteLecture() {
+        // given
+        Long lectureId = 1L;
+
+        // when
+        lectureService.deleteLecture(lectureId);
+
+        // then
+        verify(lectureRepository).deleteById(lectureId);
+    }
+
 
     @Test
     @DisplayName("유저가 수강 신청에 성공한다.")
@@ -65,24 +131,25 @@ class LectureServiceTest {
         //given
         Long lectureId = 1L;
         Long userId = 1L;
+        Long historyId = 1L;
         Integer totalQuantity = 50;
         int applyQuantity = 1;
         String name = "특강";
 
         Lecture lecture = createLecture(lectureId, name, totalQuantity, applyQuantity, now());
-        LectureHistory lectureHistory = createHistory(lecture, userId);
+        LectureHistory lectureHistory = createHistory(historyId, lecture, userId);
         LectureApplyServiceRequest request = new LectureApplyServiceRequest(lectureId, userId);
 
         when(lectureRepository.findById(request.lectureId())).thenReturn(Optional.ofNullable(lecture));
         when(lectureHistoryRepository.findByLectureIdAndUserId(lectureId, userId)).thenReturn(null);
-        when(lectureHistoryRepository.save(request.toEntity(lecture))).thenReturn(lectureHistory);
+        when(lectureHistoryRepository.save(any(LectureHistory.class))).thenReturn(lectureHistory);
 
         //when
         HistoryResponse result = lectureService.applyLecture(request);
 
         //then
-        assertThat(result).extracting("lectureId", "userId")
-                .containsExactly(lectureId, userId);
+        assertThat(result).extracting("historyId", "lectureId", "userId")
+                .containsExactly(historyId, lectureId, userId);
     }
 
     @Test
@@ -91,12 +158,13 @@ class LectureServiceTest {
         //given
         Long lectureId = 1L;
         Long userId = 1L;
+        Long historyId = 1L;
         Integer totalQuantity = 50;
         int applyQuantity = 1;
         String name = "특강";
 
         Lecture lecture = createLecture(lectureId, name, totalQuantity, applyQuantity, now());
-        LectureHistory lectureHistory = createHistory(lecture, userId);
+        LectureHistory lectureHistory = createHistory(historyId, lecture, userId);
         LectureApplyServiceRequest request = new LectureApplyServiceRequest(lectureId, userId);
 
         when(lectureRepository.findById(request.lectureId())).thenReturn(Optional.empty());
@@ -115,12 +183,13 @@ class LectureServiceTest {
     void applyLectureWithNotYetApplyDate() {
         Long lectureId = 1L;
         Long userId = 1L;
+        Long historyId = 1L;
         Integer totalQuantity = 50;
         int applyQuantity = 1;
         String name = "특강";
 
         Lecture lecture = createLecture(lectureId, name, totalQuantity, applyQuantity, now().plusDays(1));
-        LectureHistory lectureHistory = createHistory(lecture, userId);
+        LectureHistory lectureHistory = createHistory(historyId, lecture, userId);
         LectureApplyServiceRequest request = new LectureApplyServiceRequest(lectureId, userId);
 
         when(lectureRepository.findById(request.lectureId())).thenReturn(Optional.ofNullable(lecture));
@@ -140,12 +209,13 @@ class LectureServiceTest {
         //given
         Long lectureId = 1L;
         Long userId = 1L;
+        Long historyId = 1L;
         Integer totalQuantity = 50;
         int applyQuantity = 50;
         String name = "특강";
 
         Lecture lecture = createLecture(lectureId, name, totalQuantity, applyQuantity, now());
-        LectureHistory lectureHistory = createHistory(lecture, userId);
+        LectureHistory lectureHistory = createHistory(historyId, lecture, userId);
         LectureApplyServiceRequest request = new LectureApplyServiceRequest(lectureId, userId);
 
         when(lectureRepository.findById(request.lectureId())).thenReturn(Optional.ofNullable(lecture));
@@ -170,8 +240,8 @@ class LectureServiceTest {
         String name = "특강";
 
         Lecture lecture = createLecture(lectureId, name, totalQuantity, applyQuantity, now());
-        LectureHistory lectureHistory1 = createHistory(lecture, userId);
-        LectureHistory lectureHistory2 = createHistory(lecture, userId);
+        LectureHistory lectureHistory1 = createHistory(1L, lecture, userId);
+        LectureHistory lectureHistory2 = createHistory(2L, lecture, userId);
         LectureApplyServiceRequest request = new LectureApplyServiceRequest(lectureId, userId);
 
         when(lectureRepository.findById(request.lectureId())).thenReturn(Optional.ofNullable(lecture));
@@ -191,16 +261,32 @@ class LectureServiceTest {
         //given
         Long userId = 2L;
         Long lectureId = 2L;
+        Long historyId = 2L;
+
         Lecture lecture = Lecture.builder().build();
 
-        LectureHistory lectureHistory = createHistory(lecture, userId);
+        LectureHistory lectureHistory = createHistory(historyId, lecture, userId);
         when(lectureHistoryRepository.findByLectureIdAndUserId(lectureId, userId)).thenReturn(lectureHistory);
 
         //when
         boolean result = lectureService.checkHistories(lectureId, userId);
 
         //then
-        assertThat(result).isEqualTo(true);
+        assertThat(result).isTrue();
+    }
+
+
+    @Test
+    @DisplayName("수강 신청한 특강을 취소한다.")
+    void cancelLectureWithApplied() {
+        // given
+        LectureCancelServiceRequest request = LectureCancelServiceRequest.builder().build();
+
+        // when
+        lectureService.cancelHistory(request);
+
+        // then
+        verify(lectureHistoryRepository).deleteByLectureIdAndUserId(request.lectureId(), request.userId());
     }
 
     private Lecture createLecture(Long lectureId, String name, Integer totalQuantity, int applyQuantity, LocalDateTime dateAppliedStart) {
@@ -214,8 +300,9 @@ class LectureServiceTest {
 
     }
 
-    private LectureHistory createHistory(Lecture lecture, Long userId) {
+    private LectureHistory createHistory(Long historyId, Lecture lecture, Long userId) {
         return LectureHistory.builder()
+                .historyId(historyId)
                 .lecture(lecture)
                 .userId(userId)
                 .build();
