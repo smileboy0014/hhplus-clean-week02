@@ -138,6 +138,7 @@ class LectureServiceTest {
 
         // then
         verify(lectureRepository).deleteById(lectureId);
+
     }
 
     @DisplayName("등록되지 않은 특강을 삭제하려고 하면 예외를 반환한다.")
