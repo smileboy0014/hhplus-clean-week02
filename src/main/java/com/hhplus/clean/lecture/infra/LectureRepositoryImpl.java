@@ -29,7 +29,7 @@ public class LectureRepositoryImpl implements LectureRepository {
 
     @Override
     public List<Lecture> findAll() {
-        return lectureJpaRepository.findAll();
+        return lectureJpaRepository.findAllWithFetchJoin();
     }
 
 
@@ -44,5 +44,10 @@ public class LectureRepositoryImpl implements LectureRepository {
         Optional<Lecture> lecture = lectureJpaRepository.findById(lectureId);
         if (lecture.isEmpty()) throw new LectureException(ErrorCode.LECTURE_NOT_EXIST, "삭제할 특강이 존재하지 않습니다.");
         lectureJpaRepository.deleteById(lectureId);
+    }
+
+    @Override
+    public void deleteAllInBatch() {
+        lectureJpaRepository.deleteAllInBatch();
     }
 }

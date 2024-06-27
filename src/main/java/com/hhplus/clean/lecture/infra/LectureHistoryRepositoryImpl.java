@@ -6,6 +6,7 @@ import com.hhplus.clean.lecture.exception.LectureException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.hhplus.clean.lecture.exception.ErrorCode.LECTURE_HISTORY_NOT_EXIST;
@@ -41,6 +42,17 @@ public class LectureHistoryRepositoryImpl implements LectureHistoryRepository {
                 .orElseThrow(() -> new LectureException(LECTURE_HISTORY_NOT_EXIST, "취소할 강의 신청 내역이 존재하지 않습니다."));
 
         lectureHistoryJpaRepository.delete(lectureHistory);
+    }
+
+    @Override
+    public void deleteAllInBatch() {
+        lectureHistoryJpaRepository.deleteAllInBatch();
+
+    }
+
+    @Override
+    public List<LectureHistory> findByLectureId(Long lectureId) {
+        return lectureHistoryJpaRepository.findByLecture_LectureId(lectureId);
     }
 
 }

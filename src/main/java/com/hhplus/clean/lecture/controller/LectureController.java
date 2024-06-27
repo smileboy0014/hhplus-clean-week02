@@ -50,13 +50,13 @@ public class LectureController {
     }
 
     // 특강 신청 내역에 유저가 있는지 확인
-    @GetMapping("/check/{lectureId}")
-    public ApiResponse<Boolean> checkHistories(@PathVariable Long lectureId, @RequestParam Long userId) {
+    @GetMapping("/application/{userId}")
+    public ApiResponse<Boolean> checkHistories(@PathVariable Long userId, @RequestParam Long lectureId) {
         return ApiResponse.ok(lectureService.checkHistories(lectureId, userId));
     }
 
     //특강 신청 취소
-    @PostMapping("/cancel")
+    @PostMapping("/application/cancel")
     public ApiResponse<String> cancelLecture(@RequestBody LectureCancelRequest request) {
         lectureService.cancelHistory(request.toServiceRequest());
 

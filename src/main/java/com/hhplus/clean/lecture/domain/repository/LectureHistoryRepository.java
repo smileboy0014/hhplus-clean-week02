@@ -3,6 +3,8 @@ package com.hhplus.clean.lecture.domain.repository;
 import com.hhplus.clean.lecture.domain.entity.LectureHistory;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface LectureHistoryRepository {
 
@@ -14,4 +16,7 @@ public interface LectureHistoryRepository {
 
     void deleteByLectureIdAndUserId(Long lectureId, Long userId);
 
+    void deleteAllInBatch();
+
+    List<LectureHistory> findByLectureId(Long lectureId);
 }

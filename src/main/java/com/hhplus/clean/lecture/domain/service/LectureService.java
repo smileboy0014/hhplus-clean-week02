@@ -32,6 +32,23 @@ public class LectureService {
                 .toList();
     }
 
+    // 특강 등록
+    @Transactional
+    public LectureResponse createLecture(LectureCreateServiceRequest request) {
+        // 같은 이름의 강의가 존재하는지 확인
+        validateDuplicateLectureName(request.name());
+
+        Lecture newLecture = lectureRepository.save(request.toEntity());
+        return LectureResponse.of(newLecture);
+    }
+
+    // 특강 삭제
+    @Transactional
+    public void deleteLecture(Long lectureId) {
+        getLectureOrThrow(lectureId);
+        lectureRepository.deleteById(lectureId);
+    }
+
     // 특강 신청
     @Transactional
     public HistoryResponse applyLecture(LectureApplyServiceRequest request) {
@@ -52,22 +69,6 @@ public class LectureService {
         return HistoryResponse.of(newHistory);
     }
 
-    // 특강 등록
-    @Transactional
-    public LectureResponse createLecture(LectureCreateServiceRequest request) {
-        // 같은 이름의 강의가 존재하는지 확인
-        validateDuplicateLectureName(request.name());
-
-        Lecture newLecture = lectureRepository.save(request.toEntity());
-        return LectureResponse.of(newLecture);
-    }
-
-    // 특강 삭제
-    @Transactional
-    public void deleteLecture(Long lectureId) {
-        getLectureOrThrow(lectureId);
-        lectureRepository.deleteById(lectureId);
-    }
 
     // 특강 신청 여부 확인
     public boolean checkHistories(Long lectureId, Long userId) {
