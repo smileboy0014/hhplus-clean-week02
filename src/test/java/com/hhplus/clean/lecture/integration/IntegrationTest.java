@@ -78,7 +78,6 @@ class IntegrationTest {
                 }
             });
         }
-
         latch.await();
         executorService.shutdown();
 
@@ -388,6 +387,4 @@ class IntegrationTest {
                 .build();
 
     }
-
-
 }
