@@ -29,6 +29,6 @@
 ![img.png](img.png)
 
 ### DB ERD ###
-
+![db_erd.png](db_erd.png)
 
 
