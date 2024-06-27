@@ -32,10 +32,6 @@ public class LectureRepositoryImpl implements LectureRepository {
         return lectureJpaRepository.findAll();
     }
 
-    @Override
-    public Optional<Lecture> findByName(String name) {
-        return lectureJpaRepository.findByName(name);
-    }
 
     @Override
     public boolean existsByName(String name) {
