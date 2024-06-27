@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,6 +56,19 @@ class LectureServiceTest {
 
         //then
         assertThat(result).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("등록된 특강 목록이 없다면 빈 배열을 반환한다.")
+    void getLecturesWithNoList() {
+        //given
+        when(lectureRepository.findAll()).thenReturn(new ArrayList<>());
+
+        //when
+        List<LectureResponse> result = lectureService.getLectures();
+
+        //then
+        assertThat(result).isEmpty();
     }
 
     @Test
@@ -126,6 +140,19 @@ class LectureServiceTest {
         verify(lectureRepository).deleteById(lectureId);
     }
 
+    @DisplayName("등록되지 않은 특강을 삭제하려고 하면 예외를 반환한다.")
+    @Test
+    void deleteLectureWithNoLecture() {
+        // given
+        Long lectureId = 1L;
+
+        // when // then
+        assertThatThrownBy(() -> lectureService.deleteLecture(lectureId))
+                .isInstanceOf(LectureException.class)
+                .extracting("errorCode")
+                .isEqualTo(LECTURE_NOT_EXIST);
+    }
+
 
     @Test
     @DisplayName("유저가 수강 신청에 성공한다.")
@@ -160,18 +187,10 @@ class LectureServiceTest {
         //given
         Long lectureId = 1L;
         Long userId = 1L;
-        Long historyId = 1L;
-        Integer totalQuantity = 50;
-        int applyQuantity = 1;
-        String name = "특강";
 
-        Lecture lecture = createLecture(lectureId, name, totalQuantity, applyQuantity, now());
-        LectureHistory lectureHistory = createHistory(historyId, lecture, userId);
         LectureApplyServiceRequest request = new LectureApplyServiceRequest(lectureId, userId);
 
         when(lectureRepository.findById(request.lectureId())).thenReturn(Optional.empty());
-        when(lectureHistoryRepository.findByLectureIdAndUserId(lectureId, userId)).thenReturn(null);
-        when(lectureHistoryRepository.save(request.toEntity(lecture))).thenReturn(lectureHistory);
 
         //when //then
         assertThatThrownBy(() -> lectureService.applyLecture(request))
@@ -185,18 +204,14 @@ class LectureServiceTest {
     void applyLectureWithNotYetApplyDate() {
         Long lectureId = 1L;
         Long userId = 1L;
-        Long historyId = 1L;
         Integer totalQuantity = 50;
         int applyQuantity = 1;
         String name = "특강";
 
         Lecture lecture = createLecture(lectureId, name, totalQuantity, applyQuantity, now().plusDays(1));
-        LectureHistory lectureHistory = createHistory(historyId, lecture, userId);
         LectureApplyServiceRequest request = new LectureApplyServiceRequest(lectureId, userId);
 
         when(lectureRepository.findById(request.lectureId())).thenReturn(Optional.ofNullable(lecture));
-        when(lectureHistoryRepository.findByLectureIdAndUserId(lectureId, userId)).thenReturn(null);
-        when(lectureHistoryRepository.save(request.toEntity(lecture))).thenReturn(lectureHistory);
 
         //when //then
         assertThatThrownBy(() -> lectureService.applyLecture(request))
@@ -211,18 +226,14 @@ class LectureServiceTest {
         //given
         Long lectureId = 1L;
         Long userId = 1L;
-        Long historyId = 1L;
         Integer totalQuantity = 50;
         int applyQuantity = 50;
         String name = "특강";
 
         Lecture lecture = createLecture(lectureId, name, totalQuantity, applyQuantity, now());
-        LectureHistory lectureHistory = createHistory(historyId, lecture, userId);
         LectureApplyServiceRequest request = new LectureApplyServiceRequest(lectureId, userId);
 
         when(lectureRepository.findById(request.lectureId())).thenReturn(Optional.ofNullable(lecture));
-        when(lectureHistoryRepository.findByLectureIdAndUserId(lectureId, userId)).thenReturn(null);
-        when(lectureHistoryRepository.save(request.toEntity(lecture))).thenReturn(lectureHistory);
 
         //when //then
         assertThatThrownBy(() -> lectureService.applyLecture(request))
@@ -258,8 +269,8 @@ class LectureServiceTest {
     @DisplayName("수강 신청에 성공한 유저는 신청 내역에서 true 를 반환한다.")
     void checkHistories() {
         //given
-        Long userId = 2L;
-        Long lectureId = 2L;
+        Long userId = 1L;
+        Long lectureId = 1L;
 
         when(lectureHistoryRepository.existsByLectureIdAndUserId(lectureId, userId)).thenReturn(true);
 
@@ -268,6 +279,22 @@ class LectureServiceTest {
 
         //then
         assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("수강 신청에 실패한 유저는 신청 내역에서 false 를 반환한다.")
+    void checkHistoriesWithFailToApplyLecture() {
+        //given
+        Long userId = 1L;
+        Long lectureId = 1L;
+
+        when(lectureHistoryRepository.existsByLectureIdAndUserId(lectureId, userId)).thenReturn(false);
+
+        //when
+        boolean result = lectureService.checkHistories(lectureId, userId);
+
+        //then
+        assertThat(result).isFalse();
     }
 
 
@@ -283,6 +310,7 @@ class LectureServiceTest {
         // then
         verify(lectureHistoryRepository).deleteByLectureIdAndUserId(request.lectureId(), request.userId());
     }
+
 
     private Lecture createLecture(Long lectureId, String name, Integer totalQuantity, int applyQuantity, LocalDateTime dateAppliedStart) {
         return Lecture.builder()
