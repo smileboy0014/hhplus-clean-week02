@@ -57,11 +57,11 @@ public class Lecture extends BaseTimeEntity {
     public void apply() {
         // 기간이 아직 안됐는지 확인
         if (!availableApplyDate()) {
-            throw new LectureException(INVALID_LECTURE_APPLY_DATE, "아직 특강 신청 기간이 되지 않았습니다.");
+            throw new LectureException(INVALID_LECTURE_APPLY_DATE, "아직 특강 신청 기간이 되지 않았습니다. '신청 기간:%s부터'".formatted(dateAppliedStart.toLocalDate()));
         }
         // 정원이 다 안 찼는지 확인
         if (!availableApplyQuantity()) {
-            throw new LectureException(INVALID_LECTURE_APPLY_QUANTITY, "정원이 다 찼습니다.");
+            throw new LectureException(INVALID_LECTURE_APPLY_QUANTITY, "정원이 다 찼습니다. '%d/%d'".formatted(appliedQuantity, totalQuantity));
         }
         appliedQuantity++;
     }
@@ -80,6 +80,4 @@ public class Lecture extends BaseTimeEntity {
 
         return appliedQuantity < totalQuantity;
     }
-
-
 }

@@ -5,6 +5,7 @@ import com.hhplus.clean.lecture.controller.dto.LectureApplyRequest;
 import com.hhplus.clean.lecture.controller.dto.LectureCreateRequest;
 import com.hhplus.clean.lecture.domain.service.LectureService;
 import com.hhplus.clean.lecture.domain.service.dto.HistoryResponse;
+import com.hhplus.clean.lecture.domain.service.dto.LectureCancelServiceRequest;
 import com.hhplus.clean.lecture.domain.service.dto.LectureResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -110,12 +111,11 @@ class LectureControllerTest {
                 .andExpect(jsonPath("$.data.lectureId").value(1L));
     }
 
-    @DisplayName("등록된 특강을 삭제합니다.")
+    @DisplayName("등록된 특강을 삭제 한다.")
     @Test
     void deleteLecture() throws Exception {
         // given
         Long lectureId = 1L;
-
 
         // when // then
         mockMvc.perform(delete("/lectures/%s".formatted(lectureId)))
@@ -124,7 +124,7 @@ class LectureControllerTest {
     }
 
     @Test
-    @DisplayName("유저가 수강 신청에 성공한다.")
+    @DisplayName("유저가 수강 신청에 성공 한다.")
     void checkHistories() throws Exception {
         //given
         Long lectureId = 1L;
@@ -132,14 +132,31 @@ class LectureControllerTest {
         when(lectureService.checkHistories(lectureId, userId)).thenReturn(true);
 
         //when //then
-        mockMvc.perform(get("/lectures/check/%s".formatted(userId))
-                        .param("userId", String.valueOf(userId)))
+        mockMvc.perform(get("/lectures/application/%s".formatted(userId))
+                        .param("lectureId", String.valueOf(lectureId)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.status").value("OK"))
                 .andExpect(jsonPath("$.message").value("OK"))
                 .andExpect(jsonPath("$.data").value(true));
+    }
+
+    @Test
+    @DisplayName("특강 신청 취소를 한다.")
+    void cancelLecture() throws Exception {
+        // given
+        LectureCancelServiceRequest request = LectureCancelServiceRequest.builder()
+                .lectureId(1L)
+                .userId(1L)
+                .build();
+
+        // when // then
+        mockMvc.perform(post("/lectures/application/cancel")
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 
 

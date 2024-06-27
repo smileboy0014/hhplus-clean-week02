@@ -3,6 +3,7 @@ services:
   mysql:
     container_name: lecture-mysql
     image: ubuntu/mysql:edge
+    restart: always
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --explicit_defaults_for_timestamp=1
     ports:
       - 23306:3306
@@ -11,6 +12,6 @@ services:
       - MYSQL_USER=abcd
       - MYSQL_PASSWORD=1234
       - MYSQL_ROOT_PASSWORD=1234
-      - TZ=UTC
+      - TZ=Asia/Seoul
     volumes:
-      - ./mysql/init:/docker-entrypoint-initdb.d
+      - ./mysql/initdb.d:/docker-entrypoint-initdb.d
