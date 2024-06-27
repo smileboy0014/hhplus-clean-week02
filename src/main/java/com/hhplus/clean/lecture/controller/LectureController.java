@@ -62,4 +62,5 @@ public class LectureController {
 
         return ApiResponse.ok(SUCCESS_CANCEL_LECTURE.message);
     }
+
 }

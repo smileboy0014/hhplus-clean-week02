@@ -20,5 +20,4 @@ public interface LectureRepository {
     void deleteById(Long lectureId);
 
     void deleteAllInBatch();
-
 }

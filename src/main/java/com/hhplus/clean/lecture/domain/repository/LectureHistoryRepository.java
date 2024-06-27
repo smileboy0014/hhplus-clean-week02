@@ -19,4 +19,5 @@ public interface LectureHistoryRepository {
     void deleteAllInBatch();
 
     List<LectureHistory> findByLectureId(Long lectureId);
+
 }

@@ -12,5 +12,4 @@ public interface LectureHistoryJpaRepository extends JpaRepository<LectureHistor
     List<LectureHistory> findByLecture_LectureId(Long lectureId);
 
     boolean existsByLecture_LectureIdAndUserId(Long lectureId, Long userId);
-
 }

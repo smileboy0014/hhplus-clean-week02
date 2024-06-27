@@ -31,7 +31,6 @@ public class LectureHistory extends BaseTimeEntity {
     private LocalDateTime dateApplied;
 
     //== 연관 관계 편의 메서드 ==//
-
     public void belongTo(Lecture lecture) {
         if (this.lecture != null) {
             this.lecture.getLectureHistories().remove(this);
