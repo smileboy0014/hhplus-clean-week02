@@ -100,7 +100,7 @@ class LectureServiceTest {
 
         Lecture lecture = createLecture(1L, name, totalQuantity, 0, date);
 
-        when(lectureRepository.findByName(name)).thenReturn(Optional.ofNullable(lecture));
+        when(lectureRepository.existsByName(name)).thenReturn(true);
         when(lectureRepository.save(any(Lecture.class))).thenReturn(lecture);
 
         // when // then
@@ -116,8 +116,10 @@ class LectureServiceTest {
     void deleteLecture() {
         // given
         Long lectureId = 1L;
+        Lecture lecture = Lecture.builder().build();
 
         // when
+        when(lectureRepository.findById(lectureId)).thenReturn(Optional.ofNullable(lecture));
         lectureService.deleteLecture(lectureId);
 
         // then
@@ -240,13 +242,10 @@ class LectureServiceTest {
         String name = "특강";
 
         Lecture lecture = createLecture(lectureId, name, totalQuantity, applyQuantity, now());
-        LectureHistory lectureHistory1 = createHistory(1L, lecture, userId);
-        LectureHistory lectureHistory2 = createHistory(2L, lecture, userId);
         LectureApplyServiceRequest request = new LectureApplyServiceRequest(lectureId, userId);
 
         when(lectureRepository.findById(request.lectureId())).thenReturn(Optional.ofNullable(lecture));
-        when(lectureHistoryRepository.findByLectureIdAndUserId(lectureId, userId)).thenReturn(lectureHistory1);
-        when(lectureHistoryRepository.save(request.toEntity(lecture))).thenReturn(lectureHistory2);
+        when(lectureHistoryRepository.existsByLectureIdAndUserId(lectureId, userId)).thenReturn(true);
 
         //when //then
         assertThatThrownBy(() -> lectureService.applyLecture(request))
@@ -261,12 +260,8 @@ class LectureServiceTest {
         //given
         Long userId = 2L;
         Long lectureId = 2L;
-        Long historyId = 2L;
 
-        Lecture lecture = Lecture.builder().build();
-
-        LectureHistory lectureHistory = createHistory(historyId, lecture, userId);
-        when(lectureHistoryRepository.findByLectureIdAndUserId(lectureId, userId)).thenReturn(lectureHistory);
+        when(lectureHistoryRepository.existsByLectureIdAndUserId(lectureId, userId)).thenReturn(true);
 
         //when
         boolean result = lectureService.checkHistories(lectureId, userId);

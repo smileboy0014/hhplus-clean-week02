@@ -15,7 +15,7 @@ public interface LectureRepository {
 
     List<Lecture> findAll();
 
-    Optional<Lecture> findByName(String name);
+    boolean existsByName(String name);
 
     void deleteById(Long lectureId);
 

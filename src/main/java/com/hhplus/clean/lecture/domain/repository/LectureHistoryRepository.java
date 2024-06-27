@@ -10,6 +10,8 @@ public interface LectureHistoryRepository {
 
     LectureHistory findByLectureIdAndUserId(Long lectureId, Long userId);
 
+    boolean existsByLectureIdAndUserId(Long lectureId, Long userId);
+
     void deleteByLectureIdAndUserId(Long lectureId, Long userId);
 
 }
