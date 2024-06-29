@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-class LectureServiceTest {
+class LectureServiceUnitTest {
 
     @Mock
     private LectureRepository lectureRepository;

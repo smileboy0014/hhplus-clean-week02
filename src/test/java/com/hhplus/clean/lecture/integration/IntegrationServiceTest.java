@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class IntegrationTest {
+class IntegrationServiceTest {
 
     @Autowired
     LectureHistoryRepository lectureHistoryRepository;
@@ -44,49 +44,6 @@ class IntegrationTest {
     void tearDown() {
         lectureHistoryRepository.deleteAllInBatch();
         lectureRepository.deleteAllInBatch();
-    }
-
-    @Test
-    @DisplayName("수강 인원이 30명인 특강을 동시에 50명의 유저가 수강 신청하면 딱 30명만 수강 신청 완료가 된다.")
-    void LectureApplyWhenConcurrency100Env() throws InterruptedException {
-        // given
-        int numThreads = 50;
-        int expectSuccessCnt = 30;
-        int expectFailCnt = 20;
-
-        Lecture lecture = createLecture("특강", 30, 0, now());
-        lectureRepository.save(lecture);
-
-        CountDownLatch latch = new CountDownLatch(numThreads);
-        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
-
-        AtomicInteger successCount = new AtomicInteger();
-        AtomicInteger failCount = new AtomicInteger();
-        //when
-        for (int i = 0; i < numThreads; i++) {
-            executorService.execute(() -> {
-                try {
-                    long randomId = ThreadLocalRandom.current().nextLong(1, 10_000_001);
-                    LectureApplyServiceRequest request = new LectureApplyServiceRequest(lecture.getLectureId(), randomId);
-                    lectureService.applyLecture(request);
-
-                    successCount.getAndIncrement();
-                } catch (RuntimeException e) {
-                    failCount.getAndIncrement();
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-        latch.await();
-        executorService.shutdown();
-
-        List<LectureHistory> result = lectureHistoryRepository.findByLectureId(lecture.getLectureId());
-
-        // then
-        assertThat(result).hasSize(30);
-        assertThat(successCount.get()).isEqualTo(expectSuccessCnt);
-        assertThat(failCount.get()).isEqualTo(expectFailCnt);
     }
 
     @Test
@@ -366,6 +323,49 @@ class IntegrationTest {
 
         // then
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("수강 인원이 30명인 특강을 동시에 50명의 유저가 수강 신청하면 딱 30명만 수강 신청 완료가 된다.")
+    void LectureApplyWhenConcurrency100Env() throws InterruptedException {
+        // given
+        int numThreads = 50;
+        int expectSuccessCnt = 30;
+        int expectFailCnt = 20;
+
+        Lecture lecture = createLecture("특강", 30, 0, now());
+        lectureRepository.save(lecture);
+
+        CountDownLatch latch = new CountDownLatch(numThreads);
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+
+        AtomicInteger successCount = new AtomicInteger();
+        AtomicInteger failCount = new AtomicInteger();
+        //when
+        for (int i = 0; i < numThreads; i++) {
+            executorService.execute(() -> {
+                try {
+                    long randomId = ThreadLocalRandom.current().nextLong(1, 10_000_001);
+                    LectureApplyServiceRequest request = new LectureApplyServiceRequest(lecture.getLectureId(), randomId);
+                    lectureService.applyLecture(request);
+
+                    successCount.getAndIncrement();
+                } catch (RuntimeException e) {
+                    failCount.getAndIncrement();
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+        latch.await();
+        executorService.shutdown();
+
+        List<LectureHistory> result = lectureHistoryRepository.findByLectureId(lecture.getLectureId());
+
+        // then
+        assertThat(result).hasSize(30);
+        assertThat(successCount.get()).isEqualTo(expectSuccessCnt);
+        assertThat(failCount.get()).isEqualTo(expectFailCnt);
     }
 
     private Lecture createLecture(String name, Integer totalQuantity, int applyQuantity, LocalDateTime dateAppliedStart) {
