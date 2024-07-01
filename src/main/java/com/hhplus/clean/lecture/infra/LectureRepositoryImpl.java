@@ -50,4 +50,5 @@ public class LectureRepositoryImpl implements LectureRepository {
     public void deleteAllInBatch() {
         lectureJpaRepository.deleteAllInBatch();
     }
+
 }

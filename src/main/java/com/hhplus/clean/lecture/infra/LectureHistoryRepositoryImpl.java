@@ -28,7 +28,6 @@ public class LectureHistoryRepositoryImpl implements LectureHistoryRepository {
         Optional<LectureHistory> lectureHistory = lectureHistoryJpaRepository.findByLecture_LectureIdAndUserId(lectureId, userId);
 
         return lectureHistory.orElse(null);
-
     }
 
     @Override

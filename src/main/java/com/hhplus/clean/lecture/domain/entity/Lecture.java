@@ -77,7 +77,6 @@ public class Lecture extends BaseTimeEntity {
         if (totalQuantity == null) {
             return true;
         }
-
         return appliedQuantity < totalQuantity;
     }
 }

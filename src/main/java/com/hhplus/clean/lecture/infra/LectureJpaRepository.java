@@ -11,16 +11,13 @@ import java.util.Optional;
 
 public interface LectureJpaRepository extends JpaRepository<Lecture, Long> {
 
-
-    @Query("select l from Lecture l left join fetch l.lectureHistories")
-    List<Lecture> findAllWithFetchJoin();
-
-    Optional<Lecture> findByName(String name);
-
     //비관적 락 사용
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select l from Lecture  l where l.lectureId = :id")
     Optional<Lecture> findIdWithPessimisticLock(Long id);
 
+    @Query("select l from Lecture l left join fetch l.lectureHistories")
+    List<Lecture> findAllWithFetchJoin();
+    
     boolean existsByName(String name);
 }

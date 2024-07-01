@@ -69,7 +69,6 @@ public class LectureService {
         return HistoryResponse.of(newHistory);
     }
 
-
     // 특강 신청 여부 확인
     public boolean checkHistories(Long lectureId, Long userId) {
         return lectureHistoryRepository.existsByLectureIdAndUserId(lectureId, userId);
